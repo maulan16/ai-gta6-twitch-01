@@ -14,7 +14,8 @@ except the method):
     ceiling, a small one has headroom to rise as regions unlock.
   - Forecast quantiles: q_tau(h) = exp(alpha_h + beta_h*log(p1)
     + z_tau * sd_h * 1.25), where p1 is the case's hour-1 print, sd_h the
-    residual standard deviation of that hour's fit, z_tau the normal
+    residual standard error of that hour's fit (n-2 degrees of freedom
+    for the two fitted parameters), z_tau the normal
     quantiles (-1.645, -0.674, 0, 0.674, 1.645), and 1.25 a spread
     widening that fixed under-coverage on leave-one-out validation.
   - Fallbacks: if fewer than 5 clean console launches are available, use
@@ -147,7 +148,17 @@ def fit(train):
             beta = 0.0
         alpha = mean_y - beta * mean_x
         residuals = [y - (alpha + beta * x) for x, y in zip(xs, ys)]
-        sd = statistics.pstdev(residuals) if len(residuals) > 1 else 0.15
+        # Residual standard error with n-2 degrees of freedom (two
+        # parameters fitted): pstdev divides by n and underestimates the
+        # spread on ~11 training launches, which is part of the
+        # under-coverage the spread multiplier compensates for.
+        n = len(residuals)
+        if n > 2:
+            sd = math.sqrt(sum(r * r for r in residuals) / (n - 2))
+        elif n > 1:
+            sd = statistics.pstdev(residuals)
+        else:
+            sd = 0.15
         regs[hour] = (alpha, beta, sd)
     return regs
 

@@ -12,7 +12,7 @@ GTA VI is console-only with a rolling midnight-local unlock (New Zealand first, 
 
 - **Training set:** the case's comparables that are clean console launches (tier "comparable", no PC in platforms, a full 24-hour release day). PC-simultaneous and early-access-contaminated launches are excluded — they front-load hour 1 and stay flat, the wrong shape for a console-only rolling launch.
 - **Per-hour OLS regression** on the log scale: `log(v_h) = α_h + β_h · log(v_1)`, fit on the clean console family. The slope falls from ~1.0 in the early hours to ~0.65 late (a big midnight launch is already near the day's ceiling; a small one has headroom to rise).
-- **Quantiles:** `q_τ(h) = exp(α_h + β_h · log(p1) + z_τ · sd_h · 1.25)` with normal quantiles `z`, `sd_h` the per-hour residual SD, and a 1.25 spread widening that fixed under-coverage on validation.
+- **Quantiles:** `q_τ(h) = exp(α_h + β_h · log(p1) + z_τ · sd_h · 1.25)` with normal quantiles `z`, `sd_h` the per-hour residual standard error (n−2 degrees of freedom for the two fitted parameters), and a 1.25 spread widening that fixed under-coverage on validation.
 - **Fallbacks:** fewer than 5 clean console comparables → all comparable-tier → all full days → the house baseline shape.
 
 Python 3.13, standard library only, deterministic (two runs on the same case write identical output), no network, no randomness, no clock.
@@ -23,10 +23,10 @@ Mean pinball loss on the log scale, 4 practice cases (Marvel's Wolverine, Red De
 
 | model | mean pinball loss |
 |---|---|
-| this forecaster | **0.196** |
+| this forecaster | **0.192** |
 | house baseline | 0.387 |
 
-Leave-one-out over the 11 clean console launches: 0.173 vs baseline 0.344.
+Leave-one-out over the 11 clean console launches: 0.174 vs baseline 0.359.
 
 ## Run it
 
